@@ -68,7 +68,6 @@ void handleConnection(int clientSock)
 
 
 int main(int argc, char **argv) {
-  /
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (server_fd < 0) {
    std::cerr << "Failed to create server socket\n";
