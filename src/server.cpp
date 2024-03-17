@@ -14,7 +14,7 @@
 void handleConnection(int clientSock)
 {
   char buf[1024];
-  int bytesReceived = recv(clientSock, buf, 1024,0);
+  int bytesReceived = recv(clientSock, buf, 1024, 0);
   if (bytesReceived < 0)
   {
     std::cout << "error in recv";
@@ -29,7 +29,7 @@ void handleConnection(int clientSock)
 
   const std::string response200Ok = "HTTP/1.1 200 OK\r\n";
   const std::string response404 = "HTTP/1.1 404 Not Found\r\n";
-  
+
   std::string response = "";
   if (regex_search(request, smRequest, regDefault))
   {
@@ -53,7 +53,9 @@ void handleConnection(int clientSock)
   }
   else
     response = response404 + "\r\n";
-  int sendResponse = send(clientSock, response.c_str(), response.length(),0);
+
+  int sendResponse = send(clientSock, response.c_str(), response.length(), 0);
+
   if (sendResponse < 0)
   {
     std::cout << "issue with send";
@@ -63,38 +65,43 @@ void handleConnection(int clientSock)
   {
     std::cout << "Sent:\n" + response;
   }
-1
 }
-int main(int argc, char **argv) {
+
+int main(int argc, char **argv)
+{
   // You can use print statements as follows for debugging, they'll be visible when running tests.
   // Uncomment this block to pass the first stage
   //
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-  if (server_fd < 0) {
-   std::cerr << "Failed to create server socket\n";
-   return 1;
+  if (server_fd < 0)
+  {
+    std::cerr << "Failed to create server socket\n";
+    return 1;
   }
   //
   // Since the tester restarts your program quite often, setting REUSE_PORT
   // ensures that we don't run into 'Address already in use' errors
   int reuse = 1;
-  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
+  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0)
+  {
     std::cerr << "setsockopt failed\n";
     return 1;
   }
-  //
+  
   struct sockaddr_in server_addr;
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = INADDR_ANY;
   server_addr.sin_port = htons(4221);
-  //
-  if (bind(server_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) != 0) {
+  
+  if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0)
+  {
     std::cerr << "Failed to bind to port 4221\n";
     return 1;
   }
-  //
+  
   int connection_backlog = 5;
-  if (listen(server_fd, connection_backlog) != 0) {
+  if (listen(server_fd, connection_backlog) != 0)
+  {
     std::cerr << "listen failed\n";
     return 1;
   }
@@ -102,14 +109,13 @@ int main(int argc, char **argv) {
   {
     struct sockaddr_in client_addr;
     int client_addr_len = sizeof(client_addr);
-    int clientSock = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+    int clientSock = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addr_len);
     if (clientSock != -1)
     {
       std::thread(handleConnection, clientSock).detach();
     }
   }
-  
-  //
+
   close(server_fd);
   return 0;
 }
