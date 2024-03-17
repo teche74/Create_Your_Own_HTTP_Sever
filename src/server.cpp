@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   int bytesRecieved = recv(client_fd,buff,1024, 0);
 
   if(bytesRecieved < 0){
-    std::cout<< "error in receiving";
+    std::cout<< "error in recv function";
     return 2; 
   }
 
