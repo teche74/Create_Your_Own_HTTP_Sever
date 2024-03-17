@@ -87,18 +87,18 @@ int main(int argc, char **argv)
     std::cerr << "setsockopt failed\n";
     return 1;
   }
-  
+
   struct sockaddr_in server_addr;
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = INADDR_ANY;
   server_addr.sin_port = htons(4221);
-  
+
   if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0)
   {
     std::cerr << "Failed to bind to port 4221\n";
     return 1;
   }
-  
+
   int connection_backlog = 5;
   if (listen(server_fd, connection_backlog) != 0)
   {
