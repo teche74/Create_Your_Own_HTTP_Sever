@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+const std::string SERVER_200_OK = "HTTP/1.1 200 OK\r\n\r\n";
+
 int main(int argc, char **argv)
 {
   // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -51,11 +53,10 @@ int main(int argc, char **argv)
   
   std::cout << "Waiting for a client to connect...\n";
   
-  int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addr_len);
+  int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *)&client_addr_len);
   std::cout << "Client connected\n";
-  std::string resp = std::string("HTPP/1.1 200 OK\r\n\r\n").c_str();
 
-  send(client_fd,resp.c_str(),resp.length(),0);
+  send(client_fd,SERVER_200_OK.c_str(),SERVER_200_OK.size(),0);
   
   close(server_fd);
 
