@@ -7,8 +7,10 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include<regex>
 
 const std::string SERVER_200_OK = "HTTP/1.1 200 OK\r\n\r\n";
+const std::string RESPONSE_404 = "HTTP/1.1 404 Not Found\r\n\r\n";
 
 int main(int argc, char **argv)
 {
@@ -56,7 +58,34 @@ int main(int argc, char **argv)
   int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *)&client_addr_len);
   std::cout << "Client connected\n";
 
-  send(client_fd,SERVER_200_OK.c_str(),SERVER_200_OK.size(),0);
+  char buff[1024];
+
+  int bytesRecieved = recv(client_fd,buff,1024, 0);
+
+  if(bytesRecieved < 0){
+    std::cout<< "error in recv";
+    return 2; 
+  }
+
+  const std::string request(buf,1024);
+  std::cout<< request;
+
+  std::regex reg("^GET [\\/a-zA-Z\\.]+ HTTP\\/1\\.1\\r\n");
+  std::smatch sm;
+
+  bool send200 = regex_search(request,sm,reg);
+
+  int sendResponse = -1;
+
+  if(send200)
+    sendResponse = send(client_fd,SERVER_200_OK.c_str(),SERVER_200_OK.size(),0);
+  else
+    sendResponse = send(client_fd,RESPONSE_404.c_str(),RESPONSE_404.size(),0)
+
+  if(sendResponse < 0){
+    std::cout<<"issue with send";
+    return 3;
+  }
   
   close(server_fd);
 
