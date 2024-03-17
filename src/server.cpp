@@ -77,26 +77,24 @@ int main(int argc, char **argv)
   std::regex regDefault("^GET \\/ HTTP\\/1\\.1\\r\n");
   std::regex regEcho("^GET \\/echo\\/([\\/a-zA-Z0-9\\.\\-]+) HTTP\\/1\\.1\\r\n");
   std::smatch smRequest;
-  const std::string response200Ok = "HTTP/1.1 200 OK\r\n";
-  const std::string response404 = "HTTP/1.1 404 Not Found\r\n";
 
   std::string response = "";
   if (regex_search(request, smRequest, regDefault))
   {
-    response = response200Ok + "\r\n";
+    response = SERVER_200_OK + "\r\n";
   }
   else if (regex_search(request, smRequest, regEcho))
   {
     const std::string echoString = smRequest.str(1);
-    response = response200Ok;
+    response = SERVER_200_OK;
     response += "Content-Type: text/plain\r\n";
     response += "Content-Length: " + std::to_string(echoString.length()) + "\r\n";
     response += "\r\n" + echoString + "\r\n";
   }
   else
-    response = response404 + "\r\n";
+    response = RESPONSE_404 + "\r\n";
 
-  int sendResponse = send(client_sock, response.c_str(), response.length(),0);
+  int sendResponse = send(client_fd, response.c_str(), response.length(),0);
   if (sendResponse < 0)
   {
     std::cout << "issue with send";
