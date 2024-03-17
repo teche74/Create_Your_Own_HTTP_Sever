@@ -106,7 +106,6 @@ int main(int argc, char **argv) {
     if (clientSock != -1)
     {
       std::thread(handleConnection, clientSock).detach();
-1
     }
   }
   
