@@ -20,6 +20,8 @@ void handleConnection(int clientSock)
     std::cout << "error in recv";
     return;
   }
+
+
   const std::string request(buf, 1024);
   std::regex regDefault("^GET \\/ HTTP\\/1\\.1\\r\\n");
   std::regex regEcho("^GET \\/echo\\/([\\/a-zA-Z0-9\\.\\-]+) HTTP\\/1\\.1\\r\\n");
@@ -66,9 +68,7 @@ void handleConnection(int clientSock)
 
 
 int main(int argc, char **argv) {
-  // You can use print statements as follows for debugging, they'll be visible when running tests.
-  // Uncomment this block to pass the first stage
-  //
+  /
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (server_fd < 0) {
    std::cerr << "Failed to create server socket\n";
