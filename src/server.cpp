@@ -27,10 +27,12 @@ void handleConnection(int clientSock)
   std::regex regDefault("^GET \\/ HTTP\\/1\\.1\\r\\n");
   std::regex regEcho("^GET \\/echo\\/([\\/a-zA-Z0-9\\.\\-]+) HTTP\\/1\\.1\\r\\n");
   std::regex regUserAgent("^GET \\/user\\-agent\\ HTTP\\/1\\.1\\r\\nHost\\: [a-zA-Z]+\\:[0-9]+\\r\\nUser\\-Agent\\: ([a-zA-Z0-9\\/\\.\\-]+)");
-  std::regex regFile("^GET \\/files\\/([\\/a-zA-Z0-9\\.\\-\\_]+) HTTP\\/1\\.1\\r\\n");
+  std::regex regFileGet("^GET \\/files\\/([\\/a-zA-Z0-9\\.\\-\\_]+) HTTP\\/1\\.1\\r\\n");
+  std::regex regFilePost("^POST \\/files\\/([\\/a-zA-Z0-9\\.\\-\\_]+) HTTP\\/1\\.1\\r\\nHost\\: [a-zA-Z]+\\:[0-9]+\\r\\nUser\\-Agent\\: ([a-zA-Z0-9\\/\\.\\-]+)\\r\\nContent\\-Length\\: [0-9]+\\r\\nAccept\\-Encoding\\: [a-zA-Z\\-\\_0-9]+\\r\\n\\r\\n([\\/a-zA-Z0-9\\.\\-\\_ ]+)");
 
   std::smatch smRequest;
   const std::string response200Ok = "HTTP/1.1 200 OK\r\n";
+  const std::string response201Ok = "HTTP/1.1 201 OK\r\n";
   const std::string response404 = "HTTP/1.1 404 Not Found\r\n";
 
   std::string response = "";
@@ -54,7 +56,24 @@ void handleConnection(int clientSock)
     response += "Content-Length: " + std::to_string(userAgent.length()) + "\r\n";
     response += "\r\n" + userAgent + "\r\n";
   }
-  else if (regex_search(request, smRequest, regFile))
+  else if (regex_search(request, smRequest, regFilePost))
+  {
+    const std::string filePath = smRequest.str(1);
+    const std::string dataToPost = smRequest.str(3);
+    std::ofstream writeFile;
+    writeFile.open(directory + filePath);
+    if (writeFile)
+    {
+      writeFile << dataToPost;
+      response = response201Ok + "\r\n";
+      writeFile.close();
+    }
+    else
+    {
+      response = response404 + "\r\n";
+    }
+  }
+  else if (regex_search(request, smRequest, regFileGet))
   {
     const std::string filePath = smRequest.str(1);
     std::ifstream requestFile(directory + filePath);
