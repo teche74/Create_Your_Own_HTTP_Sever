@@ -18,11 +18,9 @@ void handleConnection(int clientSock)
   if (bytesReceived < 0)
   {
     std::cout << "error in recv";
-
     return;
   }
   const std::string request(buf, 1024);
-
   std::regex regDefault("^GET \\/ HTTP\\/1\\.1\\r\\n");
   std::regex regEcho("^GET \\/echo\\/([\\/a-zA-Z0-9\\.\\-]+) HTTP\\/1\\.1\\r\\n");
   std::regex regUserAgent("^GET \\/user\\-agent\\ HTTP\\/1\\.1\\r\\nHost\\: [a-zA-Z]+\\:[0-9]+\\r\\nUser\\-Agent\\: ([a-zA-Z0-9\\/\\.]+)");
@@ -57,6 +55,7 @@ void handleConnection(int clientSock)
   if (sendResponse < 0)
   {
     std::cout << "issue with send";
+
     return;
   }
   else
@@ -110,7 +109,6 @@ int main(int argc, char **argv) {
     }
   }
   
-  //
   close(server_fd);
   return 0;
 }
