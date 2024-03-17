@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   std::string response = "";
   if (regex_search(request, smRequest, regDefault))
   {
-    response = SERVER_200_OK + "\r\n";
+    response = SERVER_200_OK ;
   }
   else if (regex_search(request, smRequest, regEcho))
   {
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     response += "\r\n" + echoString + "\r\n";
   }
   else
-    response = RESPONSE_404 + "\r\n";
+    response = RESPONSE_404 ;
 
   int sendResponse = send(client_fd, response.c_str(), response.length(),0);
   if (sendResponse < 0)
