@@ -11,7 +11,7 @@
 int main(int argc, char **argv)
 {
   // You can use print statements as follows for debugging, they'll be visible when running tests.
-  std::cout << "Logs from your program will appear here!\n";
+  // std::cout << "Logs from your program will appear here!\n";
   // Uncomment this block to pass the first stage
   //
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -50,9 +50,7 @@ int main(int argc, char **argv)
   //
   struct sockaddr_in client_addr;
   int client_addr_len = sizeof(client_addr);
-  //
-  std::cout << "Waiting for a client to connect...\n";
-  //
+  // std::cout << "Waiting for a client to connect...\n";
   int client_sock = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addr_len);
   std::cout << "Client connected\n";
   char buf[1024];
@@ -64,8 +62,9 @@ int main(int argc, char **argv)
   }
   const std::string request(buf, 1024);
   std::cout << request;
-  std::regex regDefault("^GET \\/ HTTP\\/1\\.1\\r\n");
-  std::regex regEcho("^GET \\/echo\\/([\\/a-zA-Z0-9\\.\\-]+) HTTP\\/1\\.1\\r\n");
+  std::regex regDefault("^GET \\/ HTTP\\/1\\.1\\r\\n");
+  std::regex regEcho("^GET \\/echo\\/([\\/a-zA-Z0-9\\.\\-]+) HTTP\\/1\\.1\\r\\n");
+  std::regex regUserAgent("^GET \\/user\\-agent\\ HTTP\\/1\\.1\\r\\nHost\\: [a-zA-Z]+\\:[0-9]+\\r\\nUser\\-Agent\\: ([a-zA-Z0-9\\/\\.]+)");
   std::smatch smRequest;
   const std::string response200Ok = "HTTP/1.1 200 OK\r\n";
   const std::string response404 = "HTTP/1.1 404 Not Found\r\n";
@@ -77,11 +76,11 @@ int main(int argc, char **argv)
   }
   else if (regex_search(request, smRequest, regEcho))
   {
-    const std::string echoString = smRequest.str(1);
+    const std::string userAgent = smRequest.str(1);
     response = response200Ok;
     response += "Content-Type: text/plain\r\n";
-    response += "Content-Length: " + std::to_string(echoString.length()) + "\r\n";
-    response += "\r\n" + echoString + "\r\n";
+    response += "Content-Length: " + std::to_string(userAgent.length()) + "\r\n";
+    response += "\r\n" + userAgent + "\r\n";
   }
   else
     response = response404 + "\r\n";
