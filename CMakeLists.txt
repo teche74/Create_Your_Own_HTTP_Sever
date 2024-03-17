@@ -3,5 +3,7 @@ project(http-server-starter-cpp)
 set(CMAKE_CXX_STANDARD 20) # Enable the C++20 standard
 
 set(SOURCE_FILES src/server.cpp)
+find_package(Threads REQUIRED)
 
 add_executable(server ${SOURCE_FILES})
+target_link_libraries(server PRIVATE Threads::Threads)
