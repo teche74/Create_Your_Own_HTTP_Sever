@@ -63,11 +63,11 @@ int main(int argc, char **argv)
   int bytesRecieved = recv(client_fd,buff,1024, 0);
 
   if(bytesRecieved < 0){
-    std::cout<< "error in recv";
+    std::cout<< "error in receiving";
     return 2; 
   }
 
-  const std::string request(buf,1024);
+  const std::string request(buff,1024);
   std::cout<< request;
 
   std::regex reg("^GET [\\/a-zA-Z\\.]+ HTTP\\/1\\.1\\r\n");
