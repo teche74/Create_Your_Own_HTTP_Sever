@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   if(send200)
     sendResponse = send(client_fd,SERVER_200_OK.c_str(),SERVER_200_OK.size(),0);
   else
-    sendResponse = send(client_fd,RESPONSE_404.c_str(),RESPONSE_404.size(),0)
+    sendResponse = send(client_fd,RESPONSE_404.c_str(),RESPONSE_404.size(),0);
 
   if(sendResponse < 0){
     std::cout<<"issue with send";
