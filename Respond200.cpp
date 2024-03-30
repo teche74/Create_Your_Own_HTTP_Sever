@@ -119,6 +119,5 @@ int main(int argc, char **argv) {
   }
   close(client_fd);
   close(server_fd);
-1
   return 0;
 }
