@@ -10,31 +10,40 @@ This project is a simple HTTP server implemented in C++. It provides basic funct
 - **Error Handling**: Provides basic error handling for invalid requests or server errors.
 - **Multithreading**: Utilizes multithreading to handle multiple client connections concurrently.
 
-## Usage
-
-1. **Compilation**: Compile the source code using a C++ compiler. Ensure that you have the necessary dependencies installed (see Dependencies section below).
-   ```bash
-   g++ -o http_server http_server.cpp -std=c++11 -pthread
-
-2. **Execution**: Run the compiled executable to start the HTTP server. Optionally, you can specify a directory from which to serve files using the --directory flag.
-
-  ```bash
-  ./http_server [--directory <directory_path>]
-  ```
-
-
-3. **Accessing the Server**: Once the server is running, you can access it using a web browser or an HTTP client. By default, the server listens on port 4221.
-
-4. **Testing**: Use your preferred web browser or an HTTP client (e.g., cURL, Postman) to send GET and POST requests to the server and observe the responses.
-
 ## Dependencies
-  - C++ Compiler (e.g., g++)
-  - iostream: Standard input/output stream library.
-  - string: String manipulation library.
-  - cstring: C-style string manipulation library.
-  - fstream: File stream library for file input/output operations.
-  - map: Container that stores key-value pairs.
-  - thread: Multithreading support library.
-  - vector: Dynamic array container.
-  - unistd.h, sys/types.h, sys/socket.h, netdb.h: Networking and socket-related libraries.
+- C++ Compiler (e.g., g++)
+- iostream: Standard input/output stream library.
+- string: String manipulation library.
+- cstring: C-style string manipulation library.
+- fstream: File stream library for file input/output operations.
+- map: Container that stores key-value pairs.
+- thread: Multithreading support library.
+- vector: Dynamic array container.
+- unistd.h, sys/types.h, sys/socket.h, netdb.h: Networking and socket-related libraries.
 
+# Trying Out the Simple C++ HTTP Server
+
+To try out the Simple C++ HTTP Server, follow these steps:
+
+## 1. Download the Code
+
+Download or copy the provided C++ HTTP server code (Final Step ) into a file named `http_server.cpp`.
+
+## 2. Compile the Code
+
+Open a terminal and navigate to the directory where `http_server.cpp` is located. Then, compile the code using the following command:
+
+```bash
+   g++ -o http_server http_server.cpp -std=c++11 -pthread
+```
+## 3. Run the Server
+
+Execute the generated executable file to start the HTTP server. Optionally, you can specify a directory from which to serve files using the `--directory` flag. Here's the command to run the server:
+
+```bash
+./http_server [--directory <directory_path>]
+```
+Replace <directory_path> with the path of the directory you want to serve files from. If you omit the --directory flag, the server will serve files from the current directory.
+
+## 4. Accessing the Server
+Once the server is running, you can access it using a web browser or an HTTP client. By default, the server listens on port 4221. Open a web browser and navigate to http://localhost:4221 to interact with the server.
