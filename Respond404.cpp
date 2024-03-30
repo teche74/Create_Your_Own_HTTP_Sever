@@ -17,81 +17,117 @@
   Otherwise, you'll need to respond with a 404 Not Found response.
 */
 
-#include <arpa/inet.h>
+#include <iostream>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
-#include <netdb.h>
-#include <string>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include <arpa/inet.h>
+
+constexpr int SERVER_PORT = 4221;
+constexpr int CONNECTION_BACKLOG = 5;
+constexpr int BUFFER_SIZE = 512;
+
+int createServerSocket() {
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) {
+        std::cerr << "Failed to create server socket\n";
+        exit(EXIT_FAILURE);
+    }
+    return server_fd;
+}
+
+void setSocketOptions(int server_fd) {
+    int reuse = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
+        std::cerr << "setsockopt failed\n";
+        exit(EXIT_FAILURE);
+    }
+}
+
+void bindServerSocket(int server_fd) {
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(SERVER_PORT);
+    if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
+        std::cerr << "Failed to bind to port " << SERVER_PORT << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+int acceptClientConnection(int server_fd) {
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_len = sizeof(client_addr);
+    std::cout << "Waiting for a client to connect...\n";
+    int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+    if (client_fd < 0) {
+        std::cerr << "Failed to connect with client\n";
+        exit(EXIT_FAILURE);
+    }
+    std::cout << "Client connected\n";
+    return client_fd;
+}
+
+std::string receiveData(int client_fd) {
+    char buffer[BUFFER_SIZE];
+    int bytes_received = recv(client_fd, buffer, sizeof(buffer), 0);
+    if (bytes_received < 0) {
+        std::cerr << "Failed to receive data from client\n";
+        exit(EXIT_FAILURE);
+    }
+    return std::string(buffer, bytes_received);
+}
+
+void sendData(int client_fd, const std::string& data) {
+    int bytes_sent = send(client_fd, data.c_str(), data.size(), 0);
+    if (bytes_sent < 0) {
+        std::cerr << "Failed to send data to client\n";
+    } else {
+        std::cout << "Sent " << bytes_sent << " bytes to client." << std::endl;
+    }
+}
+
+void closeSocket(int sockfd) {
+    close(sockfd);
+}
+
+std::string extractPath(const std::string& request) {
+    int i = request.find_first_of('/');
+    std::string path = request.substr(i);
+    int j = path.find_first_of(' ');
+    return path.substr(0, j);
+}
+
+std::string generateResponse(const std::string& path) {
+    if (path == "/") {
+        return "HTTP/1.1 200 OK\r\n\r\n";
+    } else {
+        return "HTTP/1.1 404 Not Found\r\n\r\n";
+    }
+}
 
 int main(int argc, char **argv) {
-  int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-  if (server_fd < 0) {
-    std::cerr << "Failed to create server socket\n";
-    return 1;
-  }
-  int reuse = 1;
-  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) <
-      0) {
-    std::cerr << "setsockopt failed\n";
-    return 1;
-  }
-  struct sockaddr_in server_addr;
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-  server_addr.sin_port = htons(4221);
-  if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) !=
-      0) {
-    std::cerr << "Failed to bind to port 4221\n";
-    return 1;
-  }
-  int connection_backlog = 5;
-  if (listen(server_fd, connection_backlog) != 0) {
-    std::cerr << "listen failed\n";
-    return 1;
-  }
-  struct sockaddr_in client_addr;
-  int client_addr_len = sizeof(client_addr);
-  std::cout << "Waiting for a client to connect...\n";
-  int client_fd = accept(server_fd, (struct sockaddr *)&client_addr,
-                         (socklen_t *)&client_addr_len);
-  if (client_fd < 0) {
-    std::cerr << "Failed to connect with client\n";
-    return 1;
-  }
-  char buffer[512];
-  int bytes_received = recv(client_fd, buffer, sizeof(buffer), 0);
-  if (bytes_received < 0) {
-    std::cerr << "Failed to receive data from client\n";
-    close(client_fd);
-    close(server_fd);
-    return 1;
-  }
-  std::cout << "Received " << bytes_received << " bytes from client:\n"
-            << buffer << std::endl;
-  std::string request = std::string(buffer);
-  int i = request.find_first_of('/');
-  std::string path = request.substr(i);
-  int j = path.find_first_of(' ');
-  path = path.substr(0, j);
-  std::cout << "PATH " << path << std::endl;
-  std::string OK = "HTTP/1.1 200 OK\r\n\r\n";
-  std::string NOT_FOUND = "HTTP/1.1 404 Not Found\r\n\r\n";
-  int bytes_sent;
-  if (path == "/") {
-    bytes_sent = send(client_fd, OK.c_str(), OK.size(), 0);
-  } else {
-    bytes_sent = send(client_fd, NOT_FOUND.c_str(), NOT_FOUND.size(), 0);
-  }
-  if (bytes_sent < 0) {
-    std::cerr << "Failed to send data to client\n";
-  } else {
-    std::cout << "Sent " << bytes_sent << " bytes to client." << std::endl;
-  }
-  close(client_fd);
-  close(server_fd);
-  return 0;
+    int server_fd = createServerSocket();
+    setSocketOptions(server_fd);
+    bindServerSocket(server_fd);
+
+    if (listen(server_fd, CONNECTION_BACKLOG) != 0) {
+        std::cerr << "listen failed\n";
+        closeSocket(server_fd);
+        exit(EXIT_FAILURE);
+    }
+
+    int client_fd = acceptClientConnection(server_fd);
+    std::string request = receiveData(client_fd);
+    std::string path = extractPath(request);
+    std::string response = generateResponse(path);
+    sendData(client_fd, response);
+
+    closeSocket(client_fd);
+    closeSocket(server_fd);
+
+    return 0;
 }
+
