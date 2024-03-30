@@ -47,57 +47,70 @@
 
   netdb.h: This header provides access to functions and data structures for domain name resolution (DNS) and network-related information. Functions like getaddrinfo and getnameinfo are included in this header.
 */
+constexpr int SERVER_PORT = 4221;
+constexpr int CONNECTION_BACKLOG = 5;
+
+
+int createServerSocket() {
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) {
+        std::cerr << "Failed to create server socket\n";
+        exit(EXIT_FAILURE);
+    }
+    return server_fd;
+}
+
+void setSocketOptions(int server_fd) {
+    int reuse = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
+        std::cerr << "setsockopt failed\n";
+        exit(EXIT_FAILURE);
+    }
+}
+
+void bindServerSocket(int server_fd) {
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(SERVER_PORT);
+    if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
+        std::cerr << "Failed to bind to port " << SERVER_PORT << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+int waitForClientConnection(int server_fd) {
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_len = sizeof(client_addr);
+    std::cout << "Waiting for a client to connect...\n";
+    int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+    if (client_fd < 0) {
+        std::cerr << "Failed to accept connection\n";
+        exit(EXIT_FAILURE);
+    }
+    std::cout << "Client connected\n";
+    return client_fd;
+}
+
+void closeSocket(int sockfd) {
+    close(sockfd);
+}
 
 int main(int argc, char **argv) {
+    int server_fd = createServerSocket();
+    setSocketOptions(server_fd);
+    bindServerSocket(server_fd);
 
-  // Initializing Socket for the server
-  int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-  
-  if (server_fd < 0) {
-    std::cerr << "Failed to create server socket\n";
-    return 1;
-  }
+    if (listen(server_fd, CONNECTION_BACKLOG) != 0) {
+        std::cerr << "listen failed\n";
+        closeSocket(server_fd);
+        exit(EXIT_FAILURE);
+    }
 
-  // Enable functionality to reuse the port
-  int reuse = 1;
-  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
-    std::cerr << "setsockopt failed\n";
-    return 1;
-  }
+    int client_fd = waitForClientConnection(server_fd);
+    
+    closeSocket(client_fd);
+    closeSocket(server_fd);
 
-  // Bind the socket to an address and port ( 4221 )
-  struct sockaddr_in server_addr;
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-  server_addr.sin_port = htons(4221);
-  if (bind(server_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) != 0) {
-    std::cerr << "Failed to bind to port 4221\n";
-    return 1;
-  }
-
-  // Listen for incoming connections
-  int connection_backlog = 5;
-  if (listen(server_fd, connection_backlog) != 0) {
-    std::cerr << "listen failed\n";
-    return 1;
-  }
-
-  // Accept incoming connections
-  struct sockaddr_in client_addr;
-  socklen_t client_addr_len = sizeof(client_addr);
-  std::cout << "Waiting for a client to connect...\n";
-  int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
-  if (client_fd < 0) {
-    std::cerr << "Failed to accept connection\n";
-    return 1;
-  }
-  std::cout << "Client connected\n";
-
-  // Close the server socket
-  close(server_fd);
-  
-  // Close the client socket
-  close(client_fd);
-
-  return 0;
+    return 0;
 }
