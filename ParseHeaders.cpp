@@ -1,3 +1,11 @@
+/*
+    Our program will need to parse HTTP request headers.
+    When anyone send you a request of the form GET /user-agent, and it'll include a User-Agent header.
+
+    Our program will need to respond with a 200 OK response. The response should have a content type of text/plain, and it should contain the user agent value as the body.
+*/
+
+
 #include <iostream>
 #include <string>
 #include <cstring>
